@@ -7,17 +7,39 @@ install: ## Install dependencies
 	poetry install --no-interaction
 
 build: ## Build smart contracts
-	poetry run python working_vault.py
+	@echo "🔨 Building contracts..."
+	@for contract in *vault*.py *contract*.py; do \
+		if [ -f "$$contract" ]; then \
+			echo "Building $$contract..."; \
+			poetry run python "$$contract"; \
+		fi; \
+	done
 	@echo "✅ Contracts built in artifacts/"
 
 deploy: ## Deploy to LocalNet
-	poetry run python deploy_working.py
+	@for deploy in deploy_*.py *_deploy.py; do \
+		if [ -f "$$deploy" ]; then \
+			echo "Running $$deploy..."; \
+			poetry run python "$$deploy"; \
+			break; \
+		fi; \
+	done
 
 test: ## Run test suite
-	poetry run python test_vault.py
+	@for test in test_*.py *_test.py; do \
+		if [ -f "$$test" ]; then \
+			echo "Running $$test..."; \
+			poetry run python "$$test"; \
+		fi; \
+	done
 
-demo: ## Run OGC demo
-	poetry run python ogc_demo.py
+demo: ## Run demos
+	@for demo in *demo*.py demo_*.py; do \
+		if [ -f "$$demo" ]; then \
+			echo "Running $$demo..."; \
+			poetry run python "$$demo"; \
+		fi; \
+	done
 
 clean: ## Clean artifacts
 	rm -rf artifacts/

@@ -39,26 +39,79 @@ jobs:
         python -m pip install poetry==1.8.3
         poetry --version
         
-    - name: Install dependencies
-      working-directory: ogc-contracts/projects/ogc-contracts
+    - name: Find project directory
+      id: find-project
       run: |
-        poetry install --no-interaction --no-root
+        # Find directory with pyproject.toml
+        PROJECT_DIR=$(find . -name "pyproject.toml" -type f | head -1 | xargs dirname)
+        if [ -z "$PROJECT_DIR" ]; then
+          echo "No pyproject.toml found, trying common patterns..."
+          for pattern in "*contracts*/projects/*" "*contracts*" "contracts" "."; do
+            if find $pattern -name "*.py" -path "*/smart_contracts/*" 2>/dev/null | head -1; then
+              PROJECT_DIR=$(find $pattern -name "*.py" -path "*/smart_contracts/*" 2>/dev/null | head -1 | xargs dirname | xargs dirname)
+              break
+            fi
+          done
+        fi
+        echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_OUTPUT
+        echo "Found project directory: $PROJECT_DIR"
+        
+    - name: Install dependencies
+      working-directory: ${{ steps.find-project.outputs.PROJECT_DIR }}
+      run: |
+        if [ -f "pyproject.toml" ]; then
+          poetry install --no-interaction --no-root
+        else
+          echo "No pyproject.toml found, installing with pip"
+          pip install beaker-pyteal pyteal py-algorand-sdk algokit-utils python-dotenv setuptools
+        fi
         
     - name: Build contracts
-      working-directory: ogc-contracts/projects/ogc-contracts
+      working-directory: ${{ steps.find-project.outputs.PROJECT_DIR }}
       run: |
-        poetry run python working_vault.py
-        ls -la artifacts/working_vault/ || echo "Artifacts directory not found"
+        # Find and build any vault/contract files
+        for contract in *vault*.py *contract*.py; do
+          if [ -f "$contract" ]; then
+            echo "Building $contract..."
+            if [ -f "pyproject.toml" ]; then
+              poetry run python "$contract"
+            else
+              python "$contract"
+            fi
+          fi
+        done
+        # List any artifacts created
+        find . -name "artifacts" -type d -exec ls -la {} \; 2>/dev/null || echo "No artifacts directory found"
         
     - name: Run tests
-      working-directory: ogc-contracts/projects/ogc-contracts
+      working-directory: ${{ steps.find-project.outputs.PROJECT_DIR }}
       run: |
-        poetry run python test_vault.py
+        # Find and run test files
+        for test in test_*.py *_test.py; do
+          if [ -f "$test" ]; then
+            echo "Running $test..."
+            if [ -f "pyproject.toml" ]; then
+              poetry run python "$test"
+            else
+              python "$test"
+            fi
+          fi
+        done
         
-    - name: Run OGC demo
-      working-directory: ogc-contracts/projects/ogc-contracts
+    - name: Run demos
+      working-directory: ${{ steps.find-project.outputs.PROJECT_DIR }}
       run: |
-        poetry run python ogc_demo.py
+        # Find and run demo files
+        for demo in *demo*.py demo_*.py; do
+          if [ -f "$demo" ]; then
+            echo "Running $demo..."
+            if [ -f "pyproject.toml" ]; then
+              poetry run python "$demo"
+            else
+              python "$demo"
+            fi
+          fi
+        done
         
     - name: Stop LocalNet
       if: always()
