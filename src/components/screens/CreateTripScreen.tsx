@@ -144,7 +144,12 @@ export const CreateTripScreen: React.FC = () => {
                   value: dest.name.toLowerCase(),
                   label: dest.name,
                   description: dest.country,
-                  icon: '🌍'
+                  icon: dest.country === 'Italy' ? '🇮🇹' :
+                        dest.country === 'Japan' ? '🇯🇵' :
+                        dest.country === 'Thailand' ? '🇹🇭' :
+                        dest.country === 'France' ? '🇫🇷' :
+                        dest.country === 'Spain' ? '🇪🇸' :
+                        dest.country === 'Greece' ? '🇬🇷' : '🌍'
                 }))}
                 value={newTrip.destination}
                 onChange={(value) => setNewTrip({...newTrip, destination: value})}
