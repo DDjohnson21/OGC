@@ -27,6 +27,7 @@ algokit localnet status
 ```bash
 cd ~/OGC/ogc-contracts/projects/ogc-contracts
 ```
+any directory name is fine but it should have the \<name\>/projects/\<name\>
 
 ### 4. Activate Environment
 ```bash
