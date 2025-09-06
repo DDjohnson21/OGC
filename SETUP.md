@@ -47,7 +47,7 @@ poetry install
 pip install beaker-pyteal pyteal py-algorand-sdk algokit-utils
 ```
 
-### 6. Build & Test
+### 6. Build & Test (Have to write it or pull it)
 ```bash
 # Build contracts
 python working_vault.py
