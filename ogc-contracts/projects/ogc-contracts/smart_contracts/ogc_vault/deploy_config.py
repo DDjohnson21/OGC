@@ -1,44 +1,31 @@
 import logging
-
-import algokit_utils
+from beaker import sandbox
+from smart_contracts.ogc_vault.contract import app
 
 logger = logging.getLogger(__name__)
 
-
-# define deployment behaviour based on supplied app spec
 def deploy() -> None:
-    from smart_contracts.artifacts.ogc_vault.ogc_vault_client import (
-        HelloArgs,
-        OgcVaultFactory,
+    # Get sandbox client and account
+    algod_client = sandbox.get_algod_client()
+    acct = sandbox.get_accounts().pop()
+    
+    # Deploy parameters
+    goal = 1_000_000  # 1 ALGO goal
+    deadline_round = algod_client.status()["last-round"] + 1000  # ~1 hour from now
+    receiver = acct.address  # Use deployer as receiver for demo
+    
+    # Create the app
+    app_id, app_addr, _ = app.create(
+        sender=acct,
+        suggested_params=algod_client.suggested_params(),
+        goal=goal,
+        deadline_round=deadline_round,
+        receiver=receiver,
     )
-
-    algorand = algokit_utils.AlgorandClient.from_environment()
-    deployer_ = algorand.account.from_environment("DEPLOYER")
-
-    factory = algorand.client.get_typed_app_factory(
-        OgcVaultFactory, default_sender=deployer_.address
-    )
-
-    app_client, result = factory.deploy(
-        on_update=algokit_utils.OnUpdate.AppendApp,
-        on_schema_break=algokit_utils.OnSchemaBreak.AppendApp,
-    )
-
-    if result.operation_performed in [
-        algokit_utils.OperationPerformed.Create,
-        algokit_utils.OperationPerformed.Replace,
-    ]:
-        algorand.send.payment(
-            algokit_utils.PaymentParams(
-                amount=algokit_utils.AlgoAmount(algo=1),
-                sender=deployer_.address,
-                receiver=app_client.app_address,
-            )
-        )
-
-    name = "world"
-    response = app_client.send.hello(args=HelloArgs(name=name))
-    logger.info(
-        f"Called hello on {app_client.app_name} ({app_client.app_id}) "
-        f"with name={name}, received: {response.abi_return}"
-    )
+    
+    logger.info(f"Deployed OGC Vault:")
+    logger.info(f"  APP_ID: {app_id}")
+    logger.info(f"  APP_ADDRESS: {app_addr}")
+    logger.info(f"  Goal: {goal} microALGO")
+    logger.info(f"  Deadline: Round {deadline_round}")
+    logger.info(f"  Receiver: {receiver}")
