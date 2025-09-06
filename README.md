@@ -1,1 +1,1 @@
-# OGC
+# OGC - Out The Groupchat
