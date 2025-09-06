@@ -1,0 +1,118 @@
+name: OGC CI
+
+on:
+  push:
+    branches: [ main, develop, ci-runner ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+        
+    - name: Install pipx and AlgoKit
+      run: |
+        python -m pip install --user pipx
+        python -m pipx ensurepath
+        pipx install algokit==2.9.0
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        
+    - name: Verify AlgoKit installation
+      run: algokit --version
+      
+    - name: Start LocalNet
+      run: |
+        algokit localnet start
+        sleep 10  # Give LocalNet time to fully start
+        
+    - name: Install Poetry
+      run: |
+        python -m pip install poetry==1.8.3
+        poetry --version
+        
+    - name: Find project directory
+      id: find-project
+      run: |
+        # Find directory with pyproject.toml
+        PROJECT_DIR=$(find . -name "pyproject.toml" -type f | head -1 | xargs dirname)
+        if [ -z "$PROJECT_DIR" ]; then
+          echo "No pyproject.toml found, trying common patterns..."
+          for pattern in "*contracts*/projects/*" "*contracts*" "contracts" "."; do
+            if find $pattern -name "*.py" -path "*/smart_contracts/*" 2>/dev/null | head -1; then
+              PROJECT_DIR=$(find $pattern -name "*.py" -path "*/smart_contracts/*" 2>/dev/null | head -1 | xargs dirname | xargs dirname)
+              break
+            fi
+          done
+        fi
+        echo "PROJECT_DIR=$PROJECT_DIR" >> $GITHUB_OUTPUT
+        echo "Found project directory: $PROJECT_DIR"
+        
+    - name: Install dependencies
+      working-directory: ${{ steps.find-project.outputs.PROJECT_DIR }}
+      run: |
+        if [ -f "pyproject.toml" ]; then
+          poetry install --no-interaction --no-root
+        else
+          echo "No pyproject.toml found, installing with pip"
+          pip install beaker-pyteal pyteal py-algorand-sdk algokit-utils python-dotenv setuptools
+        fi
+        
+    - name: Build contracts
+      working-directory: ${{ steps.find-project.outputs.PROJECT_DIR }}
+      run: |
+        # Find and build any vault/contract files
+        for contract in *vault*.py *contract*.py; do
+          if [ -f "$contract" ]; then
+            echo "Building $contract..."
+            if [ -f "pyproject.toml" ]; then
+              poetry run python "$contract"
+            else
+              python "$contract"
+            fi
+          fi
+        done
+        # List any artifacts created
+        find . -name "artifacts" -type d -exec ls -la {} \; 2>/dev/null || echo "No artifacts directory found"
+        
+    - name: Run tests
+      working-directory: ${{ steps.find-project.outputs.PROJECT_DIR }}
+      run: |
+        # Find and run test files
+        for test in test_*.py *_test.py; do
+          if [ -f "$test" ]; then
+            echo "Running $test..."
+            if [ -f "pyproject.toml" ]; then
+              poetry run python "$test"
+            else
+              python "$test"
+            fi
+          fi
+        done
+        
+    - name: Run demos
+      working-directory: ${{ steps.find-project.outputs.PROJECT_DIR }}
+      run: |
+        # Find and run demo files
+        for demo in *demo*.py demo_*.py; do
+          if [ -f "$demo" ]; then
+            echo "Running $demo..."
+            if [ -f "pyproject.toml" ]; then
+              poetry run python "$demo"
+            else
+              python "$demo"
+            fi
+          fi
+        done
+        
+    - name: Stop LocalNet
+      if: always()
+      run: algokit localnet stop
