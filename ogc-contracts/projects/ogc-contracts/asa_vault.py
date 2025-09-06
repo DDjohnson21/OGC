@@ -25,7 +25,7 @@ def create(goal_amount: abi.Uint64, deadline_round: abi.Uint64, receiver_addr: a
     )
 
 @app.external
-def contribute_asa(*, axfer: abi.AssetTransferTransaction):
+def contribute_asa(axfer: abi.AssetTransferTransaction):
     return Seq(
         Assert(And(
             axfer.get().xfer_asset() == app.state.asset_id.get(),
