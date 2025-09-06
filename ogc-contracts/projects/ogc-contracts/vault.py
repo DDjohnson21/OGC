@@ -6,12 +6,9 @@ class G:
     goal     = GlobalStateValue(stack_type=TealType.uint64, default=Int(0))
     deadline = GlobalStateValue(stack_type=TealType.uint64, default=Int(0))  # round #
     receiver = GlobalStateValue(stack_type=TealType.bytes,  default=Bytes(""))
-    paused   = GlobalStateValue(stack_type=TealType.uint64, default=Int(0))
+    total    = GlobalStateValue(stack_type=TealType.uint64, default=Int(0))
 
-class L:
-    contributed = LocalStateValue(stack_type=TealType.uint64, default=Int(0))
-
-app = Application("OGC_Vault", state=G(), acct_state=L())
+app = Application("OGC_Vault", state=G())
 
 @app.create
 def create(goal: abi.Uint64, deadline_round: abi.Uint64, receiver: abi.Address, *, output: abi.Uint64):
@@ -19,36 +16,18 @@ def create(goal: abi.Uint64, deadline_round: abi.Uint64, receiver: abi.Address, 
         app.state.goal.set(goal.get()),
         app.state.deadline.set(deadline_round.get()),
         app.state.receiver.set(receiver.get()),
-        app.state.paused.set(Int(0)),
+        app.state.total.set(Int(0)),
         output.set(Global.current_application_id()),
     )
 
-@app.opt_in
-def opt_in():
-    return app.acct_state.contributed.set(Int(0))
-
-@Subroutine(TealType.none)
-def _not_paused():
-    return Assert(app.state.paused.get() == Int(0))
-
 @app.external
-def pause():
-    return Assert(Txn.sender() == Global.creator_address(), app.state.paused.set(Int(1)))
-
-@app.external
-def unpause():
-    return Assert(Txn.sender() == Global.creator_address(), app.state.paused.set(Int(0)))
-
-@app.external
-def contribute(*, pay: abi.PaymentTransaction):
-    """Expect group: [ Payment->app , AppCall(contribute, pay=Gtxn[0]) ]"""
+def contribute(payment: abi.PaymentTransaction):
     return Seq(
-        _not_paused(),
         Assert(And(
-            pay.get().receiver() == Global.current_application_address(),
-            pay.get().amount() > Int(0),
+            payment.get().receiver() == Global.current_application_address(),
+            payment.get().amount() > Int(0),
         )),
-        app.acct_state.contributed.set(app.acct_state.contributed.get() + pay.get().amount()),
+        app.state.total.set(app.state.total.get() + payment.get().amount()),
     )
 
 @app.external
@@ -66,24 +45,13 @@ def release():
         InnerTxnBuilder.Submit(),
     )
 
-@app.external
-def refund():
-    now = Global.round()
-    bal = Balance(Global.current_application_address())
-    amt = ScratchVar(TealType.uint64)
-    return Seq(
-        Assert(And(now >= app.state.deadline.get(), bal < app.state.goal.get())),
-        amt.store(app.acct_state.contributed.get()),
-        Assert(amt.load() > Int(0)),
-        InnerTxnBuilder.Begin(),
-        InnerTxnBuilder.SetFields({
-            TxnField.type_enum: TxnType.Payment,
-            TxnField.receiver:  Txn.sender(),
-            TxnField.amount:    amt.load(),
-        }),
-        InnerTxnBuilder.Submit(),
-        app.acct_state.contributed.set(Int(0)),
-    )
+@app.external(read_only=True)
+def get_goal(*, output: abi.Uint64):
+    return output.set(app.state.goal.get())
+
+@app.external(read_only=True)
+def get_total(*, output: abi.Uint64):
+    return output.set(app.state.total.get())
 
 if __name__ == "__main__":
     app.build().export("./artifacts")
