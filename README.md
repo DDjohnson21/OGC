@@ -32,6 +32,10 @@ This makes OGC the first trustless, social, and automated group travel savings a
 ###### https://youtu.be/amuoYIogn-4
 
 
+#### CANVA LINK
+ ##### https://www.canva.com/design/DAGyQHL0fP4/09nrU-Vbp6IPNFAdxysi-A/edit
+
+
 
 
 # ⚙️ Technical Description
