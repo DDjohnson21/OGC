@@ -40,6 +40,14 @@ coverage.xml
 ehthumbs.db
 Thumbs.db
 
+# Environment variables
+.env
+
+# Deployment files (contain sensitive app IDs)
+*_deployment.json
+simple_deployment.json
+ogc_token_info.json
+
 # Algorand
 *.key
 *.mnemonic
