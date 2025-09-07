@@ -24,6 +24,9 @@ Funds are transparent, trustless, and governed directly in smart contracts.
 
 This makes OGC the first trustless, social, and automated group travel savings app.
 
+### Demo video
+##### https://youtu.be/amuoYIogn-4
+
 
 
 
