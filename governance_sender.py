@@ -67,10 +67,12 @@ create_app:
 
 opt_in:
     // Initialize local state for new contributor
+    txn Sender
     byte "contributed"
     int 0
     app_local_put
     
+    txn Sender
     byte "voted"
     int 0
     app_local_put
