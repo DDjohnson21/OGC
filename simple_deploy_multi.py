@@ -1,69 +1,41 @@
 #!/usr/bin/env python3
 """
-Deploys the TEAL app and writes simple_deployment.json with the appId
-Network: TestNet via Algonode (no token needed)
+Deploy with wallet selection
 """
 
 import json
 import os
 import base64
 from algosdk.v2client import algod
-from algosdk import mnemonic, account, transaction, logic, encoding
+from algosdk import transaction, logic
 from algosdk.transaction import ApplicationCreateTxn, OnComplete
+from wallet_selector import select_wallet
 
 # Configuration
 ALGOD_URL = "https://testnet-api.algonode.cloud"
-ALGOD_TOKEN = ""  # not needed for Algonode
+ALGOD_TOKEN = ""
 
 # File paths
 APPROVAL_PATH = os.path.join(os.path.dirname(__file__), "simple_approval.teal")
 CLEAR_PATH = os.path.join(os.path.dirname(__file__), "simple_clear.teal")
-WALLET_PATH = os.path.join(os.path.dirname(__file__), "permanent_wallet.json")
 OUT_PATH = os.path.join(os.path.dirname(__file__), "simple_deployment.json")
-
-
-def load_account():
-    """Load account from permanent_wallet.json"""
-    with open(WALLET_PATH, 'r') as f:
-        wallet_data = json.load(f)
-    
-    if not wallet_data or 'mnemonic' not in wallet_data:
-        raise ValueError("permanent_wallet.json missing 'mnemonic'")
-    if 'addr' not in wallet_data:
-        raise ValueError("permanent_wallet.json missing 'addr'")
-    
-    # Get private key from mnemonic
-    private_key = mnemonic.to_private_key(wallet_data['mnemonic'])
-    derived_addr = account.address_from_private_key(private_key)
-    file_addr = wallet_data['addr'].strip()
-    
-    # Validate address
-    if not encoding.is_valid_address(file_addr):
-        raise ValueError(f"'addr' in permanent_wallet.json is not a valid Algorand address: {file_addr}")
-    
-    # Warn if addresses don't match
-    if derived_addr != file_addr:
-        print(f"Warning: mnemonic-derived address != file address.")
-        print(f"  derived: {derived_addr}")
-        print(f"  file:    {file_addr}")
-        print("Proceeding with the file address.")
-    
-    return {"addr": file_addr, "sk": private_key}
-
 
 def compile_teal(algod_client, teal_source):
     """Compile TEAL source code"""
     compile_response = algod_client.compile(teal_source)
     return base64.b64decode(compile_response['result'])
 
-
 def main():
-    """Main deployment function"""
+    """Main deployment function with wallet selection"""
     # Initialize Algod client
     algod_client = algod.AlgodClient(ALGOD_TOKEN, ALGOD_URL)
     
-    # Load account
-    creator = load_account()
+    # Select wallet
+    print("🚀 Deploy Smart Contract")
+    creator = select_wallet()
+    if not creator:
+        print("❌ No wallet selected")
+        return
     
     # Read TEAL files
     with open(APPROVAL_PATH, 'r') as f:
@@ -115,21 +87,23 @@ def main():
     # Get app address
     app_addr = logic.get_application_address(app_id)
     
-    print(f"Deployed App ID: {app_id}")
-    print(f"App Address: {app_addr}")
+    print(f"✅ Deployed App ID: {app_id}")
+    print(f"   App Address: {app_addr}")
+    print(f"   Deployed by: {creator['name']}")
     
     # Write deployment info
     deployment_info = {
         "appId": app_id,
         "appAddress": app_addr,
-        "network": "testnet"
+        "network": "testnet",
+        "deployedBy": creator['name'],
+        "deployerAddress": creator['addr']
     }
     
     with open(OUT_PATH, 'w') as f:
         json.dump(deployment_info, f, indent=2)
     
     print(f"Wrote {OUT_PATH}")
-
 
 if __name__ == "__main__":
     try:
