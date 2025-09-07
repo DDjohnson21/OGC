@@ -1,275 +1,137 @@
-# OGC - Out The Groupchat
+# 🐍 Python Algorand Smart Contract System
 
-## ALGO Storage Smart Contract
+Your complete Algorand smart contract system has been successfully converted to Python!
 
-This project contains a functional ALGO token storage smart contract built for the Algorand blockchain using PyTeal. It's perfect for beginners who want to learn how to create and deploy real smart contracts that handle cryptocurrency on Algorand.
+## 🚀 **Quick Start**
 
-## 🚀 What This Contract Does
-
-The smart contract stores and manages ALGO tokens (Algorand's native cryptocurrency) on the blockchain. It demonstrates:
-
-- Creating a smart contract using PyTeal
-- Storing and managing ALGO tokens
-- User balance tracking and management
-- Deposit and withdrawal functionality
-- Global and local state management
-- User opt-in/opt-out functionality
-- Deploying to Algorand testnet
-
-## 📁 Project Structure
-
-```
-OGC/
-├── hello_world_contract.py    # PyTeal source code (ALGO storage contract)
-├── approval.teal             # Compiled approval program
-├── clear.teal               # Compiled clear program
-├── deploy_contract.js        # Basic deployment script
-├── deploy_with_account.js    # Complete deployment with account creation
-├── deploy_algo_contract.js   # ALGO contract deployment script
-├── simple_test.js           # Simple contract testing script
-├── test_contract.js         # Contract testing script
-├── deployment_info.json      # Deployment information
-├── package.json             # Node.js dependencies
-├── venv/                    # Python virtual environment
-└── README.md               # This file
-```
-
-## 🛠️ Prerequisites
-
-- Node.js (v14 or higher)
-- Python 3.7 or higher
-- An Algorand testnet account with some ALGO tokens
-
-## 🚀 Quick Start
-
-### 1. Install Dependencies
+### **1. Setup**
 
 ```bash
-# Install Node.js dependencies
-npm install
-
-# Activate Python virtual environment
+# Activate virtual environment
 source venv/bin/activate
 
-# Install Python dependencies (already done)
-pip install pyteal
+# Install dependencies
+pip install -r requirements.txt
 ```
 
-### 2. Compile the Contract
+### **2. Deploy Contract**
 
 ```bash
-# Compile the ALGO storage contract
-npm run compile
+python simple_deploy.py
 ```
 
-This will generate:
-
-- `approval.teal` - The main contract logic
-- `clear.teal` - Contract cleanup logic
-
-### 3. Test the Contract
+### **3. Use Contract**
 
 ```bash
-# Test the compiled contract
-npm run test-algo
+# Opt into the contract
+python simple_deposit.py optin
+
+# Make deposits to get money back
+python simple_deposit.py deposit 2
+
+# Check contract info
+python simple_deposit.py info
 ```
 
-This will:
-
-- Verify the contract compiles correctly
-- Show contract features and actions
-- Create a test account
-- Display next steps
-
-### 4. Deploy to Testnet
-
-#### Option A: Simple Testing
+### **4. Manage Wallet**
 
 ```bash
-# Run everything at once (compile + test)
-npm start
+# Check balance
+python simple_wallet.py balance
+
+# Send ALGO
+python simple_wallet.py send <address> <amount>
+
+# Get funding instructions
+python simple_wallet.py fund
 ```
 
-#### Option B: Manual Deployment
+## 📁 **Python Files**
+
+| File                | Purpose                   | Example Usage                        |
+| ------------------- | ------------------------- | ------------------------------------ |
+| `simple_deploy.py`  | Deploy smart contracts    | `python simple_deploy.py`            |
+| `simple_deposit.py` | Interact with contracts   | `python simple_deposit.py deposit 2` |
+| `simple_wallet.py`  | Manage wallet & send ALGO | `python simple_wallet.py balance`    |
+| `setup.py`          | Setup environment         | `python setup.py`                    |
+| `requirements.txt`  | Python dependencies       | `pip install -r requirements.txt`    |
+
+## 🎯 **How the Smart Contract Works**
+
+1. **Deposit ALGO**: Send 1+ ALGO to the contract
+2. **Threshold**: When you reach 2 ALGO total deposits
+3. **Auto-Refund**: Contract automatically sends 2 ALGO back
+4. **Success Log**: Contract logs "success" when refund happens
+
+## 🔄 **Complete Workflow Example**
 
 ```bash
-# Deploy the ALGO contract
-npm run deploy-algo
-```
-
-This will:
-
-- Create a new testnet account
-- Guide you through funding it
-- Deploy the contract automatically
-- Test deposit/withdraw functionality
-
-## 🔧 Contract Details
-
-### Smart Contract Features
-
-The contract is written in PyTeal and provides:
-
-1. **ALGO Token Storage**: Stores and manages Algorand's native ALGO tokens
-2. **User Balance Tracking**: Tracks individual user balances in local state
-3. **Global State Management**: Tracks total deposits and user count
-4. **Deposit/Withdraw**: Users can deposit and withdraw ALGO tokens
-5. **User Management**: Users must opt-in to use the contract
-6. **Transaction Logging**: All operations are logged for transparency
-
-### Contract Actions
-
-- **Action 0**: Deposit ALGO tokens
-- **Action 1**: Withdraw ALGO tokens
-- **Action 2**: Get user balance
-- **Action 3**: Get contract information
-
-### State Management
-
-**Global State:**
-
-- `total_deposited`: Total ALGO deposited by all users
-- `total_users`: Number of users who opted in
-- `contract_active`: Contract status flag
-
-**Local State (per user):**
-
-- `user_balance`: User's current ALGO balance
-- `user_deposits`: User's total deposits
-
-## 📊 Contract Information
-
-- **Program Version**: 5
-- **Approval Program**: 188 lines of TEAL
-- **Clear Program**: 3 lines of TEAL
-- **Global State**: 3 integer values
-- **Local State**: 2 integer values per user
-
-## 🧪 Testing the Contract
-
-After deployment, you can:
-
-1. **View on AlgoExplorer**: Check your contract on [AlgoExplorer Testnet](https://testnet.algoexplorer.io)
-2. **Check Logs**: The contract logs all operations (deposits, withdrawals, balances)
-3. **Verify State**: Confirm ALGO balances are stored in local and global state
-4. **Test Functions**: Use the contract actions to deposit, withdraw, and check balances
-
-## 🚀 How to Run Everything
-
-### Quick Start (Recommended)
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Run everything at once
-npm start
-```
-
-This will:
-
-- Compile the contract
-- Test the contract
-- Show you how to deploy
-
-### Step-by-Step Instructions
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Compile the contract
-npm run compile
-
-# 3. Test the contract
-npm run test-algo
-
-# 4. Deploy to testnet (optional)
-npm run deploy-algo
-```
-
-### Available Commands
-
-| Command               | Description                     |
-| --------------------- | ------------------------------- |
-| `npm run compile`     | Compile PyTeal contract to TEAL |
-| `npm run test-algo`   | Test the compiled contract      |
-| `npm run deploy-algo` | Deploy contract to testnet      |
-| `npm start`           | Run compile + test              |
-| `npm run deploy`      | Basic deployment script         |
-| `npm run test`        | Test deployed contract          |
-
-### Manual Steps
-
-If you want to run things manually:
-
-```bash
-# 1. Activate Python environment
+# 1. Setup environment
 source venv/bin/activate
 
-# 2. Compile contract
-python3 hello_world_contract.py
+# 2. Deploy contract (if not already deployed)
+python simple_deploy.py
 
-# 3. Test contract
-node simple_test.js
+# 3. Opt into contract
+python simple_deposit.py optin
 
-# 4. Deploy contract
-node deploy_algo_contract.js
+# 4. Make deposit to trigger refund
+python simple_deposit.py deposit 2
+# Expected output: App Logs: ['success']
+
+# 5. Check your balance (should have received 2 ALGO back)
+python simple_wallet.py balance
 ```
 
-## 🔗 Useful Links
+## 💡 **Key Features**
 
-- [Algorand Testnet Dispenser](https://testnet.algoexplorer.io/dispenser) - Get free testnet ALGO
-- [AlgoExplorer Testnet](https://testnet.algoexplorer.io) - View your transactions
-- [PyTeal Documentation](https://pyteal.readthedocs.io/) - Learn more about PyTeal
-- [Algorand Developer Portal](https://developer.algorand.org/) - Official Algorand docs
+✅ **Same functionality as JavaScript version**  
+✅ **Compatible with existing wallet & deployment files**  
+✅ **Uses py-algorand-sdk 2.6.0**  
+✅ **Clean error handling**  
+✅ **Virtual environment setup**
 
-## 🎓 Learning Resources
+## 🛠 **Dependencies**
 
-This project is designed for beginners. Here's what you can learn:
+- **Python 3.7+**
+- **py-algorand-sdk 2.6.0**
+- **Virtual environment (recommended)**
 
-1. **PyTeal Basics**: How to write smart contracts in Python
-2. **Algorand Concepts**: Global state, local state, applications, transactions
-3. **Token Management**: How to handle ALGO tokens in smart contracts
-4. **User Management**: Opt-in/opt-out functionality
-5. **State Management**: Global vs local state usage
-6. **Deployment Process**: How to deploy contracts to testnet
-7. **SDK Usage**: Using the Algorand JavaScript SDK
+## 📊 **Commands Summary**
 
-## 🚨 Important Notes
+### **Deployment**
 
-- **Testnet Only**: This contract is for testnet only
-- **Save Your Mnemonic**: Always save your account mnemonic phrase
-- **Free Tokens**: Testnet ALGO is free from the dispenser
-- **No Real Value**: Testnet tokens have no real value
-- **User Opt-in Required**: Users must opt-in to use the contract
+- `python simple_deploy.py` - Deploy smart contract
 
-## 🔄 Next Steps
+### **Contract Interaction**
 
-Once you understand this contract, you can:
+- `python simple_deposit.py optin` - Opt into contract
+- `python simple_deposit.py deposit <amount>` - Make deposit
+- `python simple_deposit.py info` - Get contract info
 
-1. Add more token types (ASAs)
-2. Implement interest calculations
-3. Add user authentication
-4. Create a frontend interface
-5. Add more complex business logic
-6. Deploy to mainnet (with real ALGO)
-7. Create a token exchange
-8. Build a DeFi application
+### **Wallet Management**
 
-## 🤝 Contributing
+- `python simple_wallet.py balance` - Check balance
+- `python simple_wallet.py send <address> <amount>` - Send ALGO
+- `python simple_wallet.py fund` - Get funding instructions
 
-Feel free to fork this project and experiment! This is a learning project, so:
+## 🎉 **Success Indicators**
 
-- Try modifying the contract logic
-- Add new features
-- Create better deployment scripts
-- Share your improvements
+When your smart contract works correctly, you'll see:
 
-## 📝 License
+```bash
+python simple_deposit.py deposit 2
+```
 
-This project is open source and available under the MIT License.
+**Expected Output:**
+
+```
+Sent grouped deposit txs. Group ID (first tx): [TX_ID]
+App Logs: ['success']
+```
+
+This means the contract automatically sent 2 ALGO back to your wallet! 🚀
 
 ---
 
-**Happy coding on Algorand! 🚀**
+**Your Algorand smart contract system is now fully operational in Python!** 🐍✨
