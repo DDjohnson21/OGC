@@ -228,6 +228,10 @@ When everything works correctly:
 - **"Contract Not Found"**: Deploy contracts first
 - **"Opt-in Required"**: Run opt-in commands before interactions
 
+# Screenshots
+<img width="1290" height="2796" alt="image" src="https://github.com/user-attachments/assets/7fd199b0-0c63-4da9-897b-7112487e78e9" />
+
+
 ### **Quick Fixes**
 ```bash
 # Check what's deployed
