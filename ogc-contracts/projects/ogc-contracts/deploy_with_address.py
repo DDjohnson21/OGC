@@ -15,7 +15,7 @@ def deploy_to_testnet():
     print(f"Using address: {YOUR_ADDRESS}")
     
     # Get private key
-    mnemo = input("Enter your 25-word mnemonic for this address: ").strip()
+    mnemo = input("Enter your 24-word mnemonic for this address: ").strip()
     try:
         sk = mnemonic.to_private_key(mnemo)
         addr = algosdk.account.address_from_private_key(sk)

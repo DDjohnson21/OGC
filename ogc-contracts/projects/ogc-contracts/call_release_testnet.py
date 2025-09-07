@@ -9,7 +9,7 @@ from algosdk.future import transaction as tx
 ALGOD_URL = "https://testnet-api.algonode.cloud"
 
 APP_ID = int(input("APP_ID: "))
-mnemo = input("25-word TestNet mnemonic: ").strip()
+mnemo = input("24-word TestNet mnemonic: ").strip()
 
 try:
     sk = mnemonic.to_private_key(mnemo)
