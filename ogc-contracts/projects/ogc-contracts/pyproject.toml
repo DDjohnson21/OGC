@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "ogc-contracts"
+version = "0.1.0"
+description = "OGC - Out The Groupchat: Decentralized group funding on Algorand"
+authors = ["OGC Team"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.13"
+beaker-pyteal = "1.1.1"
+pyteal = "0.24.1"
+py-algorand-sdk = "2.10.0"
+algokit-utils = "2.4.0"
+python-dotenv = "1.1.1"
+setuptools = "80.9.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+black = "^24.0.0"
+isort = "^5.13.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 88
+target-version = ['py313']
+
+[tool.isort]
+profile = "black"
+line_length = 88
