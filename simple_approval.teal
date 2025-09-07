@@ -1,0 +1,145 @@
+#pragma version 9
+
+// Per-user local state:
+//   key "d" -> uint: user's cumulative deposited microAlgos into the app
+
+byte "d"
+
+// Route by OnCompletion / group size
+global GroupSize
+int 2
+==
+bnz handle_noop
+
+txn OnCompletion
+int OptIn
+==
+bnz optin
+
+txn OnCompletion
+int CloseOut
+==
+bnz closeout
+
+// UpdateApp/DeleteApp not used; approve other single-txn calls
+int 1
+return
+
+// ---------- OptIn ----------
+optin:
+int 1
+return
+
+// ---------- CloseOut ----------
+closeout:
+int 1
+return
+
+// ---------- NoOp (deposit/info) ----------
+handle_noop:
+txn OnCompletion
+int NoOp
+==
+bz reject
+
+// Expect this app call to be first in the group
+txn GroupIndex
+int 0
+==
+bz reject
+
+// Action selector in ApplicationArgs[0]: "deposit" or "info"
+txna ApplicationArgs 0
+byte "deposit"
+==
+bnz do_deposit
+
+txna ApplicationArgs 0
+byte "info"
+==
+bnz do_info
+
+b reject
+
+// ---------- info ----------
+do_info:
+byte "INFO"
+log
+int 1
+return
+
+// ---------- deposit ----------
+do_deposit:
+// Gtxn[1] must be a payment from caller to this app address
+gtxn 1 TypeEnum
+int pay
+==
+bz reject
+gtxn 1 Receiver
+global CurrentApplicationAddress
+==
+bz reject
+gtxn 1 Sender
+txn Sender
+==
+bz reject
+
+// Require >= 1 ALGO per deposit (1,000,000 µALGO)
+gtxn 1 Amount
+int 1000000
+>=
+bz reject
+
+// Add to running total in local state
+txn Sender
+dup
+app_local_get // returns 0 if unset for uint
+gtxn 1 Amount
++
+store 0              // newTotal
+
+// Write back new total
+txn Sender
+byte "d"
+load 0
+app_local_put
+
+// If newTotal >= 2_000_000, refund 2 ALGO back to sender, decrement counter, log "success"
+load 0
+int 2000000
+>=
+bz only_log
+
+itxn_begin
+int pay
+itxn_field TypeEnum
+txn Sender
+itxn_field Receiver
+int 2000000
+itxn_field Amount
+itxn_submit
+
+// Decrement their running total by 2,000,000 to allow future cycles
+load 0
+int 2000000
+-
+store 1
+txn Sender
+byte "d"
+load 1
+app_local_put
+
+byte "success"
+log
+int 1
+return
+
+only_log:
+byte "deposit_ok"
+log
+int 1
+return
+
+reject:
+int 0
+return
